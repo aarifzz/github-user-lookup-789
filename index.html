@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Profile Viewer</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .container {
+            max-width: 700px;
+        }
+        #profile-display, #error-message {
+            display: none; /* Hidden by default */
+        }
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border: 4px solid #007bff; /* Primary color border */
+        }
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            border-radius: 0.25rem;
+            background-color: #e9ecef; /* Light gray background */
+            min-width: 120px; /* Ensure a minimum width for stats */
+            flex-grow: 1; /* Allow items to grow */
+            text-align: center;
+        }
+        .stat-item h4 {
+            margin-bottom: 0.25rem;
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #343a40;
+        }
+        .stat-item p {
+            margin-bottom: 0;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        #profile-bio {
+            min-height: 2.5em; /* Reserve space for bio even if empty */
+        }
+        @media (max-width: 768px) {
+            .profile-avatar {
+                width: 120px;
+                height: 120px;
+            }
+            .stat-item {
+                min-width: unset; /* Remove min-width on smaller screens */
+                width: 100%; /* Make them stack */
+            }
+            .gap-3 {
+                gap: 0.75rem !important; /* Adjust gap for smaller screens */
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="container py-4">
+        <section class="card shadow-lg p-4 mb-4">
+            <h1 class="text-center mb-4 text-primary">GitHub Profile Viewer</h1>
+            <div class="input-group mb-3">
+                <label for="github-username" class="visually-hidden">GitHub Username</label>
+                <input type="text" id="github-username" class="form-control form-control-lg" placeholder="Enter GitHub username" aria-label="GitHub username input">
+                <button class="btn btn-primary btn-lg" type="button" id="search-button" aria-label="Search GitHub profile">Search</button>
+            </div>
+        </section>
+
+        <section id="error-message" class="alert alert-danger shadow-sm text-center" role="alert">
+            <!-- Error messages will be displayed here -->
+        </section>
+
+        <section id="profile-display" class="card shadow-lg p-4">
+            <div class="row g-4 align-items-center">
+                <div class="col-12 col-md-4 text-center">
+                    <img id="avatar" src="" alt="User Avatar" class="profile-avatar rounded-circle mb-3">
+                    <h2 id="profile-name" class="mb-0 text-dark"></h2>
+                    <p id="profile-bio" class="text-muted mt-2"></p>
+                </div>
+                <div class="col-12 col-md-8">
+                    <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-md-start mb-4">
+                        <div class="stat-item">
+                            <h4 id="public-repos"></h4>
+                            <p>Public Repos</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4 id="followers"></h4>
+                            <p>Followers</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4 id="following"></h4>
+                            <p>Following</p>
+                        </div>
+                    </div>
+                    <div class="text-center text-md-start">
+                        <a id="profile-url" href="#" target="_blank" class="btn btn-outline-info">View Profile on GitHub <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-up-right ms-1" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/>
+                            <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/>
+                          </svg></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const usernameInput = document.getElementById('github-username');
+            const searchButton = document.getElementById('search-button');
+            const profileDisplay = document.getElementById('profile-display');
+            const errorMessage = document.getElementById('error-message');
+
+            const avatar = document.getElementById('avatar');
+            const profileName = document.getElementById('profile-name');
+            const profileBio = document.getElementById('profile-bio');
+            const publicRepos = document.getElementById('public-repos');
+            const followers = document.getElementById('followers');
+            const following = document.getElementById('following');
+            const profileUrl = document.getElementById('profile-url');
+
+            const API_URL = 'https://api.github.com/users/';
+
+            // Function to hide all result sections
+            function hideAllResults() {
+                profileDisplay.style.display = 'none';
+                errorMessage.style.display = 'none';
+            }
+
+            // Function to display an error
+            function showError(message) {
+                hideAllResults();
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+            }
+
+            // Function to display profile data
+            function displayProfile(data) {
+                hideAllResults();
+
+                avatar.src = data.avatar_url;
+                avatar.alt = `${data.name || data.login}'s Avatar`;
+                profileName.textContent = data.name || data.login;
+                profileBio.textContent = data.bio || 'No bio available.';
+                publicRepos.textContent = data.public_repos;
+                followers.textContent = data.followers;
+                following.textContent = data.following;
+                profileUrl.href = data.html_url;
+
+                profileDisplay.style.display = 'block';
+            }
+
+            // Function to fetch user data
+            async function fetchUserProfile() {
+                const username = usernameInput.value.trim();
+
+                if (!username) {
+                    showError('Please enter a GitHub username.');
+                    return;
+                }
+
+                hideAllResults(); // Clear previous results/errors
+                searchButton.disabled = true; // Disable button during fetch
+                searchButton.textContent = 'Searching...';
+
+                try {
+                    const response = await fetch(`${API_URL}${username}`);
+                    
+                    if (!response.ok) {
+                        if (response.status === 404) {
+                            showError(`User "${username}" not found. Please check the username and try again.`);
+                        } else {
+                            showError(`Error: ${response.status} ${response.statusText}. Please try again later.`);
+                        }
+                        return;
+                    }
+
+                    const data = await response.json();
+                    displayProfile(data);
+
+                } catch (error) {
+                    console.error('Fetch error:', error);
+                    showError('Network error or problem fetching data. Please check your internet connection and try again.');
+                } finally {
+                    searchButton.disabled = false; // Re-enable button
+                    searchButton.textContent = 'Search';
+                }
+            }
+
+            // Event listener for the search button
+            searchButton.addEventListener('click', fetchUserProfile);
+
+            // Event listener for 'Enter' key in the input field
+            usernameInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Prevent default form submission if any
+                    fetchUserProfile();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
